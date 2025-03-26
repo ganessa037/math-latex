@@ -57,6 +57,10 @@
             background-color: #45a049;
         }
 
+        #copyBtn:hover {
+            background-color: #2196F3;
+        }
+
         #results {
             margin-top: 20px;
         }
@@ -76,6 +80,12 @@
         .error {
             color: #d32f2f;
             margin: 10px 0;
+        }
+
+        .success {
+            color: #4CAF50;
+            margin: 10px 0;
+            display: none;
         }
     </style>
 </head>
@@ -101,9 +111,11 @@
         <div>
             <button onclick="generateNumbers()">Generate Numbers</button>
             <button onclick="shuffleNumbers()" id="shuffleBtn" style="display: none;">Shuffle Numbers</button>
+            <button onclick="copyNumbers()" id="copyBtn" style="display: none; background-color: #2196F3;">Copy Numbers</button>
         </div>
 
         <div id="results"></div>
+        <p id="copySuccess" class="success">Numbers copied to clipboard!</p>
     </div>
 
     <script>
@@ -115,6 +127,7 @@
             const max = parseInt(document.getElementById('max').value);
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
+            hideCopySuccess();
 
             // Validation
             if (isNaN(count) || count <= 0) {
@@ -138,6 +151,7 @@
 
             displayNumbers('Original Numbers');
             document.getElementById('shuffleBtn').style.display = 'inline-block';
+            document.getElementById('copyBtn').style.display = 'inline-block';
         }
 
         function shuffleNumbers() {
@@ -148,6 +162,20 @@
             }
 
             displayNumbers('Shuffled Numbers');
+            hideCopySuccess();
+        }
+
+        function copyNumbers() {
+            const textToCopy = numbers.join('\n');
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    const successMsg = document.getElementById('copySuccess');
+                    successMsg.style.display = 'block';
+                    setTimeout(hideCopySuccess, 2000); // Hide after 2 seconds
+                })
+                .catch(err => {
+                    console.error('Failed to copy numbers: ', err);
+                });
         }
 
         function displayNumbers(title) {
@@ -158,6 +186,10 @@
             });
             html += `</ul><p>Generated ${numbers.length} numbers between ${document.getElementById('min').value} and ${document.getElementById('max').value}</p>`;
             resultsDiv.innerHTML = html;
+        }
+
+        function hideCopySuccess() {
+            document.getElementById('copySuccess').style.display = 'none';
         }
     </script>
 </body>
