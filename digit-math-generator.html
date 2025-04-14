@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digit Math Questions Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f3f4f6;
+            color: #1e293b;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.15), 0 3px 7px -3px rgba(0, 0, 0, 0.07);
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 2.25rem;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4b5563;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            color: #374151;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0) scale(0.95);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .generate-btn {
+            background-color: #4caf50;
+            color: white;
+        }
+        .generate-btn:hover {
+             background-color: #388e3c;
+        }
+
+         #shuffleBtn {
+            background-color: #f59e0b; /* Tailwind's amber-500 */
+            color: #fff;
+        }
+
+        #shuffleBtn:hover {
+            background-color: #d97706; /* Tailwind's amber-700 */
+        }
+
+        #copyBtn {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        #copyBtn:hover {
+            background-color: #2563eb;
+        }
+
+
+        #results {
+            margin-top: 32px;
+            padding: 20px;
+            background-color: #edf2f7;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            white-space: pre-line;
+        }
+
+        .error {
+            color: #dc2626;
+            margin-top: 16px;
+            font-size: 1rem;
+            border: 1px solid #fecaca;
+            background-color: #fef2f2;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .success {
+            color: #22c55e;
+            margin-top: 16px;
+            display: none;
+            font-size: 1rem;
+            border: 1px solid #bbf7d0;
+            background-color: #ecfdf5;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px;
+            }
+            .button-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            button {
+                width: 100%;
+                margin: 4px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Digit Math Questions Generator</h1>
+
+        <div class="input-group">
+            <label for="digitCount">Number of Digits:</label>
+            <select id="digitCount">
+                <option value="1">Single Digit</option>
+                <option value="2">Two Digits</option>
+                <option value="3">Three Digits</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="questionCount">Number of Questions:</label>
+            <input type="number" id="questionCount" min="1" placeholder="Enter number of questions">
+        </div>
+
+        <div class="button-group">
+            <button onclick="generateQuestions()" class="generate-btn">Generate Questions</button>
+             <button onclick="shuffleQuestions()" id="shuffleBtn" style="display: none;">Shuffle Questions</button>
+            <button onclick="copyQuestions()" id="copyBtn" style="display: none;">Copy Questions</button>
+        </div>
+
+        <div id="results"></div>
+        <p id="copySuccess" class="success">Questions copied to clipboard!</p>
+    </div>
+
+    <script>
+        let questions = [];
+
+        function generateQuestions() {
+            const digitCount = parseInt(document.getElementById('digitCount').value);
+            const questionCount = parseInt(document.getElementById('questionCount').value);
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            hideCopySuccess();
+
+            if (isNaN(questionCount) || questionCount <= 0) {
+                resultsDiv.innerHTML = '<p class="error">Please enter a positive number of questions.</p>';
+                document.getElementById('copyBtn').style.display = 'none';
+                document.getElementById('shuffleBtn').style.display = 'none';
+
+                return;
+            }
+
+            switch (digitCount) {
+                case 1:
+                    questions = generateMixedSingleDigitQuestions(questionCount);
+                    break;
+                case 2:
+                    questions = generateMixedTwoDigitQuestions(questionCount);
+                    break;
+                case 3:
+                    questions = generateMixedThreeDigitQuestions(questionCount);
+                    break;
+                default:
+                    resultsDiv.innerHTML = '<p class="error">Invalid digit count.</p>';
+                    document.getElementById('copyBtn').style.display = 'none';
+                    document.getElementById('shuffleBtn').style.display = 'none';
+                    return;
+            }
+
+            displayQuestions();
+            document.getElementById('copyBtn').style.display = 'inline-block';
+            document.getElementById('shuffleBtn').style.display = 'inline-block';
+        }
+
+        function generateMixedSingleDigitQuestions(numQuestions) {
+            const questions = [];
+            const operations = [
+                generateSingleDigitAdditionText,
+                generateSingleDigitSubtractionText,
+                generateSingleDigitMultiplicationText,
+                generateSingleDigitDivisionText,
+            ];
+            for (let i = 0; i < numQuestions; i++) {
+                const operation = operations[Math.floor(Math.random() * operations.length)];
+                questions.push(operation());
+            }
+            return questions;
+        }
+
+        function generateMixedTwoDigitQuestions(numQuestions) {
+            const questions = [];
+            const operations = [
+                generateTwoDigitAdditionText,
+                generateTwoDigitSubtractionText,
+                generateTwoDigitMultiplicationText,
+                generateTwoDigitDivisionText,
+            ];
+            for (let i = 0; i < numQuestions; i++) {
+                const operation = operations[Math.floor(Math.random() * operations.length)];
+                questions.push(operation());
+            }
+            return questions;
+        }
+
+        function generateMixedThreeDigitQuestions(numQuestions) {
+            const questions = [];
+            const operations = [
+                generateThreeDigitAdditionText,
+                generateThreeDigitSubtractionText,
+                generateThreeDigitMultiplicationText,
+                generateThreeDigitDivisionText,
+            ];
+            for (let i = 0; i < numQuestions; i++) {
+                const operation = operations[Math.floor(Math.random() * operations.length)];
+                questions.push(operation());
+            }
+            return questions;
+        }
+
+        function generateSingleDigitAdditionText() {
+            const num1 = Math.floor(Math.random() * 9) + 1;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            return `Operator 1 : ${num1} +  Operator 2 : ${num2}`;
+        }
+
+        function generateSingleDigitSubtractionText() {
+            const num1 = Math.floor(Math.random() * 9) + 1;
+            const num2 = Math.floor(Math.random() * num1) + 1; // Ensure non-negative result
+            return `Operator 1 : ${num1} -  Operator 2 : ${num2}`;
+        }
+
+        function generateSingleDigitMultiplicationText() {
+            const num1 = Math.floor(Math.random() * 9) + 1;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            return `Operator 1 : ${num1} x  Operator 2 : ${num2}`;
+        }
+
+        function generateSingleDigitDivisionText() {
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            const result = Math.floor(Math.random() * 9) + 1;
+            const num1 = num2 * result; // Ensure exact division within single digits
+            return `Operator 1 : ${num1} /  Operator 2 : ${num2}`;
+        }
+
+        function generateTwoDigitAdditionText() {
+            const useSingleDigit = Math.random() < 0.5;
+            const num1 = Math.floor(Math.random() * 90) + 10;
+            const num2 = useSingleDigit ? Math.floor(Math.random() * 9) + 1 : Math.floor(Math.random() * 90) + 10;
+            return `Operator 1 : ${num1} +  Operator 2 : ${num2}`;
+        }
+
+        function generateTwoDigitSubtractionText() {
+            const choice = Math.floor(Math.random() * 4) + 1;
+            let num1, num2;
+
+            if (choice === 1) { // Two Digits - Single Digit (no borrowing)
+                num2 = Math.floor(Math.random() * 9) + 1;
+                num1 = Math.floor(Math.random() * (99 - num2 + 1)) + num2;
+            } else if (choice === 2) { // Two Digits - Single Digit (with borrowing)
+                num2 = Math.floor(Math.random() * 9) + 1;
+                num1 = Math.floor(Math.random() * (99 - (10 + num2) + 1)) + (10 + num2);
+            } else if (choice === 3) { // Two Digits - Two Digits (no borrowing)
+                num2 = Math.floor(Math.random() * 90) + 10;
+                num1 = Math.floor(Math.random() * (99 - num2 + 1)) + num2;
+            } else { // Two Digits - Two Digits (with borrowing)
+                num2 = Math.floor(Math.random() * 90) + 10;
+                num1 = Math.floor(Math.random() * (99 - (num2 + 1) + 1)) + (num2 + 1);
+            }
+
+            return `Operator 1 : ${num1} -  Operator 2 : ${num2}`;
+        }
+
+        function generateTwoDigitMultiplicationText() {
+            const num1 = Math.floor(Math.random() * 90) + 10;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            return `Operator 1 : ${num1} x  Operator 2 : ${num2}`;
+        }
+
+        function generateTwoDigitDivisionText() {
+            let num1, num2;
+            let attempts = 0;
+            do {
+                num2 = Math.floor(Math.random() * 9) + 1;
+                const result = Math.floor(Math.random() * 9) + 2; // Keep results reasonable for 2 digits
+                num1 = num2 * result;
+                attempts++;
+                if (attempts > 100) {
+                    console.warn("Exceeded division attempts, possible infinite loop");
+                    return "Operator 1 : N/A / Operator 2 : N/A"; // prevent infinite loops
+                }
+            } while (num1 < 10 || num1 > 99);
+            return `Operator 1 : ${num1} /  Operator 2 : ${num2}`;
+        }
+
+        function generateThreeDigitAdditionText() {
+            const useTwoDigit = Math.random() < 0.5;
+            const num1 = Math.floor(Math.random() * 900) + 100;
+            const num2 = useTwoDigit ? Math.floor(Math.random() * 90) + 10 : Math.floor(Math.random() * 900) + 100;
+            return `Operator 1 : ${num1} +  Operator 2 : ${num2}`;
+        }
+
+        function generateThreeDigitSubtractionText() {
+            const useTwoDigit = Math.random() < 0.5;
+            let num1, num2;
+
+            if (useTwoDigit) { // Three Digits - Two Digits
+                num2 = Math.floor(Math.random() * 90) + 10;
+                num1 = Math.floor(Math.random() * (999 - num2 + 1)) + num2;
+            } else { // Three Digits - Three Digits
+                num2 = Math.floor(Math.random() * 900) + 100;
+                num1 = Math.floor(Math.random() * (999 - num2 + 1)) + num2;
+            }
+
+            return `Operator 1 : ${num1} -  Operator 2 : ${num2}`;
+        }
+
+        function generateThreeDigitMultiplicationText() {
+            const num1 = Math.floor(Math.random() * 900) + 100;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            return `Operator 1 : ${num1} x  Operator 2 : ${num2}`;
+        }
+
+        function generateThreeDigitDivisionText() {
+            let num1, num2;
+            let attempts = 0;
+            do {
+                num2 = Math.floor(Math.random() * 9) + 1;
+                const result = Math.floor(Math.random() * 100) + 12; // Keep results in a reasonable 2-3 digit range
+                num1 = num2 * result;
+                attempts++;
+                 if (attempts > 100) {
+                    console.warn("Exceeded division attempts, possible infinite loop");
+                    return "Operator 1 : N/A / Operator 2 : N/A"; // prevent infinite loops
+                }
+            } while (num1 < 100 || num1 > 999);
+            return `Operator 1 : ${num1} /  Operator 2 : ${num2}`;
+        }
+
+
+        function displayQuestions() {
+            const resultsDiv = document.getElementById('results');
+            const questionsText = questions.join('\n');
+            resultsDiv.textContent = questionsText;
+        }
+
+        function shuffleQuestions() {
+            // Fisher-Yates shuffle algorithm
+            for (let i = questions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questions[i], questions[j]] = [questions[j], questions[i]];
+            }
+            displayQuestions();
+        }
+
+
+        function copyQuestions() {
+            const questionsText = questions.join('\n');
+            navigator.clipboard.writeText(questionsText)
+                .then(() => {
+                    const successMsg = document.getElementById('copySuccess');
+                    successMsg.style.display = 'block';
+                    setTimeout(hideCopySuccess, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy questions: ', err);
+                });
+        }
+
+        function hideCopySuccess() {
+            document.getElementById('copySuccess').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
